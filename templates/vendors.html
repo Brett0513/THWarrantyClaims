@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vendors/Trades | Thomsen Homes</title>
+  <style>
+    .thomsen-watermark { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 0; pointer-events: none; opacity: 0.13;}
+    .thomsen-watermark img { max-width: 50vw; max-height: 60vh; margin: auto;}
+    .page-content { position: relative; z-index: 1; }
+    .box { margin: 2em auto; max-width: 800px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+    h1 { color: #366e7a; text-align:center;}
+    table { width: 100%; border-collapse: collapse; margin-top: 1em;}
+    th, td { border: 1px solid #c3d0d6; padding: 0.5em; text-align: left;}
+    th { background: #366e7a; color: #fff;}
+    tr:nth-child(even) { background: #e8f2f5;}
+    .btn { display:inline-block; background:#366e7a; color:#fff; padding:0.4em 1em; border-radius:0.3em; text-decoration:none; margin-bottom:1em;}
+    .btn:hover { background:#244b52; }
+  </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="page-content">
+    <!-- your existing content goes here -->
+  </div>
+  <div class="thomsen-watermark"><img src="{{ url_for('static', filename='th logo.jpg') }}"></div>
+  <div class="page-content">
+    <div class="box">
+      <h1>Vendors & Trades</h1>
+      <a href="{{ url_for('add_vendor') }}" class="btn">+ Add Vendor/Trade</a>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Contact Number</th>
+          <th>Email</th>
+        </tr>
+        {% for vendor in vendors %}
+        <tr>
+          <td>{{ vendor.name }}</td>
+          <td>{{ vendor.contact_number }}</td>
+          <td>{{ vendor.email }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <div style="text-align:center; margin-top:1em;">
+        <a href="{{ url_for('index') }}" style="color:#366e7a; font-weight:bold;">Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

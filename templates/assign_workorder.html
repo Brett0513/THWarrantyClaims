@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Work Order | Thomsen Homes</title>
+    <style>
+      .thomsen-watermark { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 0; pointer-events: none; opacity: 0.15;}
+      .thomsen-watermark img { max-width: 50vw; max-height: 60vh; margin: auto;}
+      .page-content { position: relative; z-index: 1; }
+      .box { margin: 3em auto; max-width: 600px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 15px #b6c5cc33; }
+      label { font-weight: bold; color: #244b52;}
+      select, input[type=text], input[type=date], input[type=time], textarea {
+        width: 100%; padding: 0.5em; margin: 0.4em 0 1em 0; border-radius: 0.3em; border: 1px solid #c3d0d6;
+      }
+      textarea { min-height: 60px; }
+      button { background: #366e7a; color: #fff; border: none; padding: 0.7em 1.2em; border-radius: 0.3em; font-weight: bold; font-size: 1.1em; transition: background 0.2s;}
+      button:hover { background: #244b52; }
+      h1 { color: #366e7a; text-align:center;}
+      .flash { color: #a00; text-align: center; font-weight: bold; margin-bottom: 1em;}
+    </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="page-content">
+    <!-- your existing content goes here -->
+  </div>
+  <div class="thomsen-watermark">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}">
+  </div>
+  <div class="page-content">
+    <div class="box">
+      <h1>Assign Work Order for Claim #{{ claim.id }}</h1>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash">
+            {% for message in messages %}
+              {{ message }}<br>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <form method="post">
+        <label for="vendor">Vendor/Trade Partner:</label>
+        <select name="vendor" id="vendor">
+          <option value="">-- Select Vendor/Trade --</option>
+          {% for vendor in vendors %}
+            <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.contact_number }} {{ vendor.email }})</option>
+          {% endfor %}
+        </select>
+
+        <label for="assignee">Assignee:</label>
+        <select name="assignee" id="assignee">
+          <option value="">-- Select Assignee --</option>
+          {% for assignee in assignees %}
+            <option value="{{ assignee.id }}">{{ assignee.name }} ({{ assignee.contact_number }} {{ assignee.email }})</option>
+          {% endfor %}
+        </select>
+
+        <label for="scheduled_date">Scheduled Date:</label>
+        <input type="date" name="scheduled_date" id="scheduled_date">
+
+        <label for="scheduled_time">Scheduled Time:</label>
+        <input type="time" name="scheduled_time" id="scheduled_time">
+
+        <label for="status">Status:</label>
+        <select name="status" id="status">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Completed">Completed</option>
+          <option value="In Progress">In Progress</option>
+        </select>
+
+        <label for="notes">Notes:</label>
+        <textarea name="notes" id="notes"></textarea>
+        <button type="submit">Assign Work Order</button>
+      </form>
+      <div style="text-align:center; margin-top:1em;">
+        <a href="{{ url_for('index') }}" style="color:#366e7a; font-weight:bold;">Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

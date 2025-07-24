@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Work Order | Thomsen Homes Warranty</title>
+</head>
+<body>
+    <h1>Assign Work Order for Claim #{{ claim.id }}</h1>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <p>{{ form.vendor.label }}<br>{{ form.vendor() }}</p>
+        <p>{{ form.assigned_to.label }}<br>{{ form.assigned_to() }}</p>
+        <p>{{ form.scheduled_date.label }}<br>{{ form.scheduled_date() }}</p>
+        <p>{{ form.status.label }}<br>{{ form.status() }}</p>
+        <p>{{ form.notes.label }}<br>{{ form.notes() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <a href="{{ url_for('index') }}">Back to Dashboard</a>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul>{% for msg in messages %}<li>{{ msg }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>

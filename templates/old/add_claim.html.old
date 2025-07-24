@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Claim | Thomsen Homes Warranty</title>
+</head>
+<body>
+    <h1>Add New Warranty Claim</h1>
+    <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>{{ form.address.label }}<br>{{ form.address() }}</p>
+        <p>{{ form.homeowner_name.label }}<br>{{ form.homeowner_name() }}</p>
+        <p>{{ form.contact_number.label }}<br>{{ form.contact_number() }}</p>
+        <p>{{ form.warranty_type.label }}<br>{{ form.warranty_type() }}</p>
+        <p>{{ form.issue_description.label }}<br>{{ form.issue_description() }}</p>
+        <p>{{ form.photo.label }}<br>{{ form.photo() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <a href="{{ url_for('index') }}">Back to Dashboard</a>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul>{% for msg in messages %}<li>{{ msg }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>

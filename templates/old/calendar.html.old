@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Work Order Calendar | Thomsen Homes Warranty</title>
+</head>
+<body>
+    <h1>Work Order Calendar</h1>
+    <table border="1">
+        <tr>
+            <th>Claim ID</th>
+            <th>Vendor</th>
+            <th>Assigned To</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+        {% for wo in workorders %}
+        <tr>
+            <td>{{ wo.claim_id }}</td>
+            <td>{{ wo.vendor }}</td>
+            <td>{{ wo.assigned_to }}</td>
+            <td>{{ wo.scheduled_date }}</td>
+            <td>{{ wo.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('index') }}">Back to Dashboard</a>
+</body>
+</html>

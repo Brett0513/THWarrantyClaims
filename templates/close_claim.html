@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Close Claim | Thomsen Homes</title>
+  <style>
+    body { background:#f7fbfc; font-family:sans-serif; }
+    .box { max-width:600px; margin:2em auto; background:#fff; border-radius:1em; box-shadow:0 0 10px #b6c5cc33; padding:2em; }
+    h1 { color:#366e7a; text-align:center; }
+    label { font-weight:bold; color:#244b52; }
+    .reasons { margin:1em 0; }
+    .btn { background:#366e7a; color:#fff; padding:0.5em 2em; border:none; border-radius:0.3em; font-size:1.1em; margin-top:1.2em; cursor:pointer;}
+    .btn:hover { background:#244b52; }
+    textarea { width:98%; min-height:80px; padding:0.5em; border-radius:0.3em; border:1px solid #b6c5cc; font-size:1em; }
+    .section-header { color:#366e7a; margin-top:2em; font-size:1.15em; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Close Claim #{{ claim.id }}</h1>
+    <div><b>Address:</b> {{ claim.address }}</div>
+    <div><b>Homeowner:</b> {{ claim.homeowner_name }}</div>
+    <form method="post">
+      <div class="section-header">Select Closure Reasons:</div>
+      <div class="reasons">
+        {% for reason in reasons_list %}
+          <label>
+            <input type="checkbox" name="reasons" value="{{ reason }}"
+              {% if reason in checked %}checked{% endif %}> {{ reason }}
+          </label><br>
+        {% endfor %}
+      </div>
+      <div class="section-header">Closure Notes:</div>
+      <textarea name="notes" required>{% if closure %}{{ closure.notes }}{% endif %}</textarea>
+      <br>
+      <button type="submit" class="btn">Save Closure Details</button>
+      <a href="{{ url_for('index') }}" class="btn" style="background:#c04444;">Cancel</a>
+    </form>
+    {% if closure %}
+      <div class="section-header">Existing Closure:</div>
+      <b>Reasons:</b> {{ closure.reasons }}<br>
+      <b>Notes:</b> {{ closure.notes }}<br>
+      <b>Date:</b> {{ closure.timestamp.strftime('%Y-%m-%d %H:%M') }}
+    {% endif %}
+  </div>
+</body>
+</html>

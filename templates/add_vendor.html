@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Vendor/Trade | Thomsen Homes</title>
+  <style>
+    .thomsen-watermark { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 0; pointer-events: none; opacity: 0.15;}
+    .thomsen-watermark img { max-width: 50vw; max-height: 60vh; margin: auto;}
+    .page-content { position: relative; z-index: 1; }
+    .box { margin: 3em auto; max-width: 400px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 15px #b6c5cc33; }
+    label { font-weight: bold; color: #244b52;}
+    input[type=text], input[type=email], input[type=tel] { width: 100%; padding: 0.5em; margin: 0.4em 0 1em 0; border-radius: 0.3em; border: 1px solid #c3d0d6;}
+    button { background: #366e7a; color: #fff; border: none; padding: 0.7em 1.2em; border-radius: 0.3em; font-weight: bold; font-size: 1.1em; transition: background 0.2s;}
+    button:hover { background: #244b52; }
+    h1 { color: #366e7a; text-align:center;}
+  </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="page-content">
+    <!-- your existing content goes here -->
+  </div>
+  <div class="thomsen-watermark">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}">
+  </div>
+  <div class="page-content">
+    <div class="box">
+      <h1>Add Vendor/Trade</h1>
+      <form method="post">
+        <label for="name">Vendor/Trade Name:</label>
+        <input type="text" name="name" id="name" required>
+
+        <label for="contact_number">Contact Number:</label>
+        <input type="tel" name="contact_number" id="contact_number" required>
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email">
+
+        <button type="submit">Add Vendor/Trade</button>
+      </form>
+      <div style="text-align:center; margin-top:1em;">
+        <a href="{{ url_for('vendors') }}" style="color:#366e7a; font-weight:bold;">Back to Vendors/Trades List</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

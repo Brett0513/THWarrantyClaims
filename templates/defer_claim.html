@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Defer Claim | Thomsen Homes</title>
+    <style>
+        .th-header { width: 100vw; background: #fff; padding: 0.6em 0 0.6em 1em; position: fixed; top: 0; left: 0; z-index: 10; box-shadow: 0 1px 8px #b6c5cc33; display: flex; align-items: center;}
+        .th-logo { height: 46px; width: auto; display: block; }
+        .page-content { margin-top: 75px; }
+        .box { margin: 2em auto; max-width: 600px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+        h1 { color: #366e7a; text-align:center; }
+        label { font-weight: bold; color: #244b52; display: block; margin-top: 1.1em; }
+        textarea { width: 98%; padding: 0.5em; font-size: 1em; border-radius: 0.3em; border: 1px solid #b6c5cc; margin-top: 0.3em;}
+        .btn { background:#366e7a; color:#fff; padding:0.5em 2em; border:none; border-radius:0.3em; font-size:1.1em; margin-top:1.5em; cursor:pointer;}
+        .btn:hover { background:#244b52; }
+    </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="page-content">
+    <div class="box">
+      <h1>Defer Claim #{{ claim.id }}</h1>
+      <form method="post">
+        <label for="defer_note">Please provide a note explaining why this claim is being deferred:</label>
+        <textarea name="defer_note" id="defer_note" rows="4" required></textarea>
+        <button type="submit" class="btn">Defer Claim</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

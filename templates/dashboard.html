@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | Thomsen Homes Warranty</title>
+  <style>
+    .th-header {
+      width: 100vw;
+      background: #fff;
+      padding: 0.6em 0 0.6em 1em;
+      position: fixed;
+      top: 0; left: 0; z-index: 10;
+      box-shadow: 0 1px 8px #b6c5cc33;
+      display: flex; align-items: center;
+    }
+    .th-logo {
+      height: 46px;
+      width: auto;
+      display: block;
+    }
+    .thomsen-watermark { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 0; pointer-events: none; opacity: 0.13;}
+    .thomsen-watermark img { max-width: 50vw; max-height: 60vh; margin: auto;}
+    .page-content { position: relative; z-index: 1; margin-top: 75px;}
+    .box { margin: 2em auto; max-width: 1000px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+    h1 { color: #366e7a; text-align:center;}
+    .flash-messages {margin: 1em 0 2em 0; text-align:center;}
+    .flash-messages .message {display:inline-block; background:#e5f4f8; color:#366e7a; border:1px solid #b6c5cc; border-radius: 0.5em; padding:0.7em 2em; margin-bottom:0.4em; font-size:1.08em;}
+    table { width: 100%; border-collapse: collapse; margin-top: 1em;}
+    th, td { border: 1px solid #c3d0d6; padding: 0.5em; text-align: left;}
+    th { background: #366e7a; color: #fff;}
+    tr:nth-child(even) { background: #e8f2f5;}
+    .btn { display:inline-block; background:#366e7a; color:#fff; padding:0.4em 1em; border-radius:0.3em; text-decoration:none; margin-bottom:1em;}
+    .btn:hover { background:#244b52; }
+    .btn[style*="background:#c04444"] { background:#c04444; }
+    .section-header { color:#366e7a; margin-top:2.2em; font-size:1.3em; text-transform:uppercase;}
+    .status-open { color: #a00; font-weight: bold; }
+    .status-closed { color: #366e7a; font-weight: bold; }
+    .status-scheduled { color: #237872; font-weight: bold;}
+    .status-deferred { color: #cf9300; font-weight:bold; }
+    select { font-size: 1em; }
+    form.inline { display: inline; }
+    .empty-message { color: #a0a0a0; text-align: center; padding: 1em 0; }
+    .actions-form { display:inline; }
+  </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="thomsen-watermark"><img src="{{ url_for('static', filename='th logo.jpg') }}"></div>
+  <div class="page-content">
+    <div class="box">
+      <h1>Warranty Dashboard</h1>
+      <!-- FLASH MESSAGE BLOCK -->
+      <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="message">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+      <!-- END FLASH MESSAGE BLOCK -->
+      <div>
+        <a href="{{ url_for('add_claim') }}" class="btn">+ Add Warranty Claim</a>
+        <a href="{{ url_for('vendors') }}" class="btn">Vendors/Trades</a>
+        <a href="{{ url_for('assignees') }}" class="btn">Assignees</a>
+        <a href="{{ url_for('calendar_view') }}" class="btn">View Calendar</a>
+        <a href="{{ url_for('logout') }}" class="btn" style="background:#c04444;">Logout</a>
+      </div>
+
+      {% macro claims_table(claims, claim_assignments, closures, deferrals, claim_scheduled_dates) %}
+      {% if claims %}
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Address</th>
+          <th>Homeowner</th>
+          <th>Type</th>
+          <th>Assigned To</th>
+          <th>Scheduled Date</th>
+          <th>Status</th>
+          <th>Date Reported</th>
+          <th>Actions</th>
+        </tr>
+        {% for claim in claims %}
+        <tr>
+          <td>{{ claim.id }}</td>
+          <td>{{ claim.address }}</td>
+          <td>{{ claim.homeowner_name }}</td>
+          <td>{{ claim.warranty_type }}</td>
+          <td>{{ claim_assignments[claim.id] }}</td>
+          <td>
+            {% if claim_scheduled_dates[claim.id] %}
+              {{ claim_scheduled_dates[claim.id] }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('update_claim_status', claim_id=claim.id) }}" class="inline status-form" data-claim-id="{{ claim.id }}">
+              <select name="status" onchange="handleStatusChange(this)">
+                <option value="Open" {% if claim.status == 'Open' %}selected{% endif %}>Open</option>
+                <option value="Scheduled" {% if claim.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                <option value="Deferred" {% if claim.status == 'Deferred' %}selected{% endif %}>Deferred</option>
+                <option value="Closed" {% if claim.status == 'Closed' %}selected{% endif %}>Closed</option>
+              </select>
+            </form>
+            {% if claim.status == "Scheduled" %}
+              <span class="status-scheduled">Scheduled</span>
+            {% elif claim.status == "Closed" %}
+              <span class="status-closed">Closed</span>
+            {% elif claim.status == "Deferred" %}
+              <span class="status-deferred">Deferred</span>
+            {% else %}
+              <span class="status-open">Open</span>
+            {% endif %}
+          </td>
+          <td>{{ claim.date_reported }}</td>
+          <td>
+            <a href="{{ url_for('view_claim', claim_id=claim.id) }}">View</a> |
+            <a href="{{ url_for('assign_workorder', claim_id=claim.id) }}">Assign Workorder</a> |
+            <a href="{{ url_for('view_claim_log', claim_id=claim.id) }}">View Log</a>
+            {% if claim.status == 'Closed' %}
+              {% if closures.get(claim.id) %}
+                | <a href="{{ url_for('close_claim', claim_id=claim.id) }}">View Closure Details</a>
+              {% else %}
+                | <a href="{{ url_for('close_claim', claim_id=claim.id) }}">Add Closure Details</a>
+              {% endif %}
+            {% elif claim.status == 'Deferred' %}
+              {% if deferrals.get(claim.id) %}
+                | <a href="{{ url_for('view_claim_log', claim_id=claim.id) }}">View Defer Note</a>
+              {% else %}
+                | <a href="{{ url_for('defer_claim', claim_id=claim.id) }}">Add Defer Note</a>
+              {% endif %}
+            {% endif %}
+            <form action="{{ url_for('delete_claim', claim_id=claim.id) }}" method="post" class="actions-form" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this claim? This cannot be undone.');">
+              <button type="submit" class="btn" style="background:#c04444; margin-left:0.3em;">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+        <div class="empty-message">No claims in this status.</div>
+      {% endif %}
+      {% endmacro %}
+
+      <h2 class="section-header">Open Claims</h2>
+      {{ claims_table(open_claims, claim_assignments, closures, deferrals, claim_scheduled_dates) }}
+
+      <h2 class="section-header">Scheduled Claims</h2>
+      {{ claims_table(scheduled_claims, claim_assignments, closures, deferrals, claim_scheduled_dates) }}
+
+      <h2 class="section-header">Deferred Claims</h2>
+      {{ claims_table(deferred_claims, claim_assignments, closures, deferrals, claim_scheduled_dates) }}
+
+      <h2 class="section-header">Closed Claims</h2>
+      {{ claims_table(closed_claims, claim_assignments, closures, deferrals, claim_scheduled_dates) }}
+
+    </div>
+  </div>
+  <script>
+    function handleStatusChange(select) {
+        var form = select.closest('form');
+        var claimId = form.getAttribute('data-claim-id');
+        if (select.value === 'Closed') {
+            window.location.href = '/close_claim/' + claimId;
+        } else if (select.value === 'Deferred') {
+            window.location.href = '/defer_claim/' + claimId;
+        } else {
+            form.submit();
+        }
+    }
+  </script>
+</body>
+</html>

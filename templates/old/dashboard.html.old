@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Warranty Dashboard | Thomsen Homes</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.name }}!</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <h2>Add Claim</h2>
+    <a href="{{ url_for('add_claim') }}">+ Add New Claim</a>
+    <h2>Claims</h2>
+    <table border="1">
+        <tr>
+            <th>Address</th>
+            <th>Homeowner</th>
+            <th>Contact</th>
+            <th>Warranty Type</th>
+            <th>Issue</th>
+            <th>Date</th>
+            <th>Photo</th>
+            <th>Status</th>
+            <th>Actions</th>
+            <th>Work Order</th>
+        </tr>
+        {% for claim in claims %}
+        <tr>
+            <td>{{ claim.address }}</td>
+            <td>{{ claim.homeowner_name }}</td>
+            <td>{{ claim.contact_number }}</td>
+            <td>{{ claim.warranty_type }}</td>
+            <td>{{ claim.issue_description }}</td>
+            <td>{{ claim.date_reported.strftime("%Y-%m-%d") }}</td>
+            <td>
+                {% if claim.photo_filename %}
+                <a href="{{ url_for('static', filename='uploads/' ~ claim.photo_filename) }}" target="_blank">View</a>
+                {% else %}No Photo{% endif %}
+            </td>
+            <td>{{ claim.status or "Open" }}</td>
+            <td>
+                {% if claim.status != "Completed" %}
+                    <a href="{{ url_for('complete_claim', claim_id=claim.id) }}">Mark Completed</a>
+                {% else %}
+                    Completed
+                {% endif %}
+            </td>
+            <td>
+                {% if claim.workorder %}
+                    <a href="{{ url_for('view_claim', claim_id=claim.id) }}">View</a>
+                {% else %}
+                    <a href="{{ url_for('assign_workorder', claim_id=claim.id) }}">Assign</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Work Orders</h2>
+    <a href="{{ url_for('calendar') }}">View Calendar</a>
+    <a href="{{ url_for('export_csv') }}">Export Claims CSV</a>
+    <ul>
+        {% for wo in workorders %}
+        <li>
+            Claim: {{ wo.claim_id }}, Vendor: {{ wo.vendor }}, Assigned: {{ wo.assigned_to }},
+            Date: {{ wo.scheduled_date }}, Status: {{ wo.status }},
+            <a href="{{ url_for('send_email', workorder_id=wo.id) }}">Email</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

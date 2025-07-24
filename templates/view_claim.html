@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Claim | Thomsen Homes Warranty</title>
+  <style>
+    .th-header { width: 100vw; background: #fff; padding: 0.6em 0 0.6em 1em; position: fixed; top: 0; left: 0; z-index: 10; box-shadow: 0 1px 8px #b6c5cc33; display: flex; align-items: center; }
+    .th-logo { height: 46px; width: auto; display: block; }
+    .page-content { position: relative; z-index: 1; margin-top: 75px; }
+    .box { margin: 2em auto; max-width: 700px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+    h1 { color: #366e7a; text-align:center;}
+    .field-label { font-weight: bold; color: #244b52; margin-top:1em; }
+    .info-label { font-weight: bold; color: #237872;}
+    .btn { display:inline-block; background:#366e7a; color:#fff; padding:0.4em 1.3em; border-radius:0.3em; text-decoration:none; border:none; margin-top:1em; font-size:1em;}
+    .btn:hover { background:#244b52; cursor:pointer;}
+    table.details { width: 100%; margin-top:1em;}
+    th, td { text-align:left; padding:0.4em;}
+    .back-link { display:inline-block; margin-top:1.5em; text-decoration:underline; color:#366e7a;}
+    .back-link:hover { color: #244b52; }
+    .section-header { color:#366e7a; margin-top:2em; font-size:1.15em;}
+    .flash { background: #e9c8c8; color: #a00; padding: 0.7em; border-radius: 0.4em; margin-bottom: 1em; text-align:center;}
+    .actions-bar { margin-top: 1.5em; display: flex; gap: 1em; flex-wrap: wrap;}
+    .delete-btn { background:#c04444; }
+    .delete-btn:hover { background:#900; }
+  </style>
+</head>
+<body>
+  <div class="th-header">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+  </div>
+  <div class="page-content">
+    <div class="box">
+      <h1>View Claim</h1>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash">
+            {% for message in messages %}
+              {{ message }}<br>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <table class="details">
+        <tr>
+          <th class="info-label">Address:</th>
+          <td>{{ claim.address }}</td>
+        </tr>
+        <tr>
+          <th class="info-label">Homeowner:</th>
+          <td>
+            {{ claim.homeowner_name }}
+            {% if claim.homeowner_email %}<br><a href="mailto:{{ claim.homeowner_email }}">{{ claim.homeowner_email }}</a>{% endif %}
+            {% if claim.homeowner_phone %}<br>{{ claim.homeowner_phone }}{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th class="info-label">Co-Buyer:</th>
+          <td>
+            {% if claim.cobuyer_name %}
+              {{ claim.cobuyer_name }}
+              {% if claim.cobuyer_email %}<br><a href="mailto:{{ claim.cobuyer_email }}">{{ claim.cobuyer_email }}</a>{% endif %}
+              {% if claim.cobuyer_phone %}<br>{{ claim.cobuyer_phone }}{% endif %}
+            {% else %}
+              <em>None</em>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th class="info-label">Type:</th>
+          <td>{{ claim.warranty_type }}</td>
+        </tr>
+        <tr>
+          <th class="info-label">Issue:</th>
+          <td>{{ claim.issue_description }}</td>
+        </tr>
+        <tr>
+          <th class="info-label">Date Reported:</th>
+          <td>{{ claim.date_reported }}</td>
+        </tr>
+        <tr>
+          <th class="info-label">Current Assignment:</th>
+          <td>
+            {% if latest_workorder %}
+              {% if latest_workorder.assignee %}<b>{{ latest_workorder.assignee.name }}</b>{% endif %}
+              {% if latest_workorder.vendor %}
+                {% if latest_workorder.assignee %} / {% endif %}
+                <b>{{ latest_workorder.vendor.name }}</b>
+              {% endif %}
+              {% if not latest_workorder.assignee and not latest_workorder.vendor %}Unassigned{% endif %}
+              {% if latest_workorder.scheduled_date %}<br>Scheduled for: {{ latest_workorder.scheduled_date }}{% endif %}
+              {% if latest_workorder.scheduled_time %} at {{ latest_workorder.scheduled_time }}{% endif %}
+            {% else %}
+              <b>Unassigned</b>
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+
+      {% if claim.photos %}
+        <div style="margin-top: 1.5em; text-align:center;">
+          <strong>Attached Photo(s):</strong><br>
+          {% for photo in claim.photos %}
+            <img src="{{ url_for('uploaded_file', filename=photo.filename) }}"
+                 alt="Claim Photo" style="max-width: 90%; max-height: 220px; margin: 0.7em; border-radius: 0.7em; box-shadow: 0 2px 14px #bbb; display:inline-block;">
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="actions-bar">
+        <a href="{{ url_for('view_claim_log', claim_id=claim.id) }}" class="btn">View Claim Log</a>
+        <form action="{{ url_for('delete_claim', claim_id=claim.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this claim? This cannot be undone.');">
+          <button type="submit" class="btn delete-btn">Delete This Claim</button>
+        </form>
+        <a href="{{ url_for('index') }}" class="btn" style="background:#bbb; color:#222;">&#8592; Back to Dashboard</a>
+      </div>
+
+      <div class="section-header">Reassign This Claim</div>
+      <form method="post">
+        <div>
+          <label class="field-label" for="vendor">Vendor/Trade:</label>
+          <select name="vendor" id="vendor">
+            <option value="">-- Select Vendor/Trade --</option>
+            {% for vendor in vendors %}
+              <option value="{{ vendor.id }}">{{ vendor.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="assignee">Assignee:</label>
+          <select name="assignee" id="assignee">
+            <option value="">-- Select Assignee --</option>
+            {% for assignee in assignees %}
+              <option value="{{ assignee.id }}">{{ assignee.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="scheduled_date">Scheduled Date:</label>
+          <input type="date" name="scheduled_date" id="scheduled_date">
+        </div>
+        <div>
+          <label class="field-label" for="scheduled_time">Scheduled Time:</label>
+          <input type="time" name="scheduled_time" id="scheduled_time">
+        </div>
+        <div>
+          <label class="field-label" for="notes">Notes:</label>
+          <input type="text" name="notes" id="notes" style="width:95%;">
+        </div>
+        <div>
+          <label class="field-label" for="status">Status:</label>
+          <select name="status" id="status">
+            <option value="Scheduled">Scheduled</option>
+            <option value="Open">Open</option>
+            <option value="Deferred">Deferred</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+        <button type="submit" class="btn">Reassign</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

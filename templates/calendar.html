@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Warranty Calendar | Thomsen Homes</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <style>
+        .th-header {
+            width: 100vw; background: #fff; padding: 0.6em 0 0.6em 1em; position: fixed; top: 0; left: 0; z-index: 10; box-shadow: 0 1px 8px #b6c5cc33; display: flex; align-items: center;
+        }
+        .th-logo { height: 46px; width: auto; display: block; }
+        .page-content { margin-top: 75px; }
+        .box { margin: 2em auto; max-width: 1050px; padding: 2em; background: #f7fbfc; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+        h1 { color: #366e7a; text-align:center; }
+        #calendar { max-width: 980px; margin: 0 auto; background: #fff; border-radius: 1em; box-shadow: 0 0 10px #b6c5cc33;}
+        .fc-toolbar-title { color: #366e7a; }
+        .fc-event { background-color: #237872 !important; border: none !important; }
+        .fc-daygrid-day-number { color: #244b52; }
+        .fc-button-primary { background-color: #366e7a; border: none; }
+        .fc-button-primary:hover { background-color: #244b52; }
+    </style>
+</head>
+<body>
+    <div class="th-header">
+        <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes" class="th-logo">
+    </div>
+    <div class="page-content">
+        <div class="box">
+            <h1>Warranty Workorder Calendar</h1>
+            <div id="calendar"></div>
+            <a href="{{ url_for('index') }}" class="btn" style="margin-top:2em;">Back to Dashboard</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prepare events list
+            const workorders = {{ workorders_by_day | tojson }};
+            const month = {{ month }};
+            const year = {{ year }};
+            let events = [];
+
+            for (const [day, wos] of Object.entries(workorders)) {
+                for (const wo of wos) {
+                    let title = `Claim #${wo.claim_id} - `;
+                    if (wo.claim && wo.claim.address) title += wo.claim.address + ' ';
+                    if (wo.vendor && wo.vendor.name) title += `(${wo.vendor.name})`;
+                    else if (wo.assignee && wo.assignee.name) title += `(${wo.assignee.name})`;
+                    else title += '(Unassigned)';
+                    events.push({
+                        id: wo.id,
+                        title: title,
+                        start: `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
+                        url: "/view_claim/" + wo.claim_id
+                    });
+                }
+            }
+
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                initialDate: `${year}-${String(month).padStart(2,'0')}-01`,
+                editable: true,
+                droppable: false,
+                eventStartEditable: true,
+                eventDurationEditable: false,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ''
+                },
+                events: events,
+                eventDrop: function(info) {
+                    // On drag/drop
+                    const workorder_id = info.event.id;
+                    const new_date = info.event.startStr;
+                    fetch("/api/update_workorder_date", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ workorder_id, new_date })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Work order rescheduled!');
+                        } else {
+                            alert('Failed to reschedule: ' + data.message);
+                            info.revert();
+                        }
+                    })
+                    .catch(() => {
+                        alert('Server error. Change not saved.');
+                        info.revert();
+                    });
+                },
+                eventClick: function(info) {
+                    // Default is to follow link (to claim view)
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

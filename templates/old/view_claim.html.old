@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Claim Details | Thomsen Homes Warranty</title>
+</head>
+<body>
+    <h1>Claim Details</h1>
+    <p><strong>Address:</strong> {{ claim.address }}</p>
+    <p><strong>Homeowner:</strong> {{ claim.homeowner_name }}</p>
+    <p><strong>Contact:</strong> {{ claim.contact_number }}</p>
+    <p><strong>Warranty Type:</strong> {{ claim.warranty_type }}</p>
+    <p><strong>Description:</strong> {{ claim.issue_description }}</p>
+    <p><strong>Date Reported:</strong> {{ claim.date_reported.strftime("%Y-%m-%d") }}</p>
+    <p>
+        <strong>Photo:</strong>
+        {% if claim.photo_filename %}
+            <a href="{{ url_for('static', filename='uploads/' ~ claim.photo_filename) }}" target="_blank">View Photo</a>
+        {% else %}
+            No photo uploaded
+        {% endif %}
+    </p>
+    <a href="{{ url_for('index') }}">Back to Dashboard</a>
+</body>
+</html>

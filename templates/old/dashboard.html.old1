@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thomsen Homes Warranty Dashboard</title>
+    <style>
+      .thomsen-watermark {
+        position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 0; pointer-events: none; opacity: 0.15;
+      }
+      .thomsen-watermark img { max-width: 50vw; max-height: 60vh; margin: auto; }
+      .page-content { position: relative; z-index: 1; }
+      .btn {
+        background: #366e7a;
+        color: #fff;
+        padding: 0.5em 1.2em;
+        border-radius: 0.3em;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 1em;
+        display: inline-block;
+        transition: background 0.2s;
+      }
+      .btn:hover { background: #244b52; }
+    </style>
+</head>
+<body>
+  <div class="thomsen-watermark">
+    <img src="{{ url_for('static', filename='th logo.jpg') }}" alt="Thomsen Homes Logo">
+  </div>
+  <div class="page-content">
+    <h1>Thomsen Homes Warranty Dashboard</h1>
+
+    <!-- Add Vendor/Trade Button -->
+    <a href="{{ url_for('add_vendor') }}" class="btn">+ Add Vendor/Trade</a>
+    <!-- Add other quick actions if needed -->
+    <a href="{{ url_for('add_assignee') }}" class="btn">+ Add Assignee</a>
+    <a href="{{ url_for('add_claim') }}" class="btn">+ Add Warranty Claim</a>
+    <a href="{{ url_for('vendors') }}" class="btn">View All Vendors/Trades</a>
+    <a href="{{ url_for('assignees') }}" class="btn">View All Assignees</a>
+    <a href="{{ url_for('calendar') }}" class="btn">View Calendar</a>
+    <a href="{{ url_for('logout') }}" class="btn" style="float:right;">Log Out</a>
+    <br><br>
+
+    <!-- Sample Claims Table -->
+    <h2>Open Claims</h2>
+    <table border="1" cellpadding="4" cellspacing="0">
+      <tr>
+        <th>ID</th>
+        <th>Address</th>
+        <th>Homeowner</th>
+        <th>Type</th>
+        <th>Date Reported</th>
+        <th>Status</th>
+        <th>View</th>
+        <th>Assign Work Order</th>
+      </tr>
+      {% for claim in claims %}
+      <tr>
+        <td>{{ claim.id }}</td>
+        <td>{{ claim.address }}</td>
+        <td>{{ claim.homeowner_name }}</td>
+        <td>{{ claim.warranty_type }}</td>
+        <td>{{ claim.date_reported.strftime('%Y-%m-%d') }}</td>
+        <td>{{ claim.status }}</td>
+        <td><a href="{{ url_for('view_claim', claim_id=claim.id) }}">View</a></td>
+        <td><a href="{{ url_for('assign_workorder', claim_id=claim.id) }}">Assign Work Order</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <h2>Recent Work Orders</h2>
+    <table border="1" cellpadding="4" cellspacing="0">
+      <tr>
+        <th>ID</th>
+        <th>Claim</th>
+        <th>Vendor/Trade</th>
+        <th>Assignee</th>
+        <th>Scheduled</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+      {% for wo in workorders %}
+      <tr>
+        <td>{{ wo.id }}</td>
+        <td>{{ wo.claim_id }}</td>
+        <td>{% if wo.vendor %}{{ wo.vendor.name }}{% endif %}</td>
+        <td>{% if wo.assignee %}{{ wo.assignee.name }}{% endif %}</td>
+        <td>{% if wo.scheduled_date %}{{ wo.scheduled_date.strftime('%Y-%m-%d') }}{% endif %}</td>
+        <td>{{ wo.status }}</td>
+        <td>{{ wo.notes }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>
