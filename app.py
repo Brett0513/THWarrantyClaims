@@ -605,19 +605,17 @@ def update_claim_status(claim_id):
 def defer_claim(claim_id):
     claim = Claim.query.get_or_404(claim_id)
     if request.method == 'POST':
-        reason = request.form.get('reason', '')
-        old_status = claim.status
+        notes = request.form.get('notes')
         claim.status = "Deferred"
         db.session.add(ClaimLog(
             claim_id=claim.id,
             user_id=current_user.id,
-            action=f"Status changed from {old_status} to Deferred. Reason: {reason}"
+            action=f"Claim deferred. Notes: {notes or '(none)'}"
         ))
         db.session.commit()
-        flash('Claim deferred and action logged.')
+        flash('Claim deferred.')
         return redirect(url_for('index'))
     return render_template('defer_claim.html', claim=claim)
-
 
 @app.route('/delete_claim/<int:claim_id>', methods=['POST'])
 @login_required
