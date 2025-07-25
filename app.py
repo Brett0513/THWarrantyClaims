@@ -415,19 +415,37 @@ def assign_workorder(claim_id):
         assignee = Assignee.query.get(assignee_id) if assignee_id else None
 
         # Save WorkOrder
-        workorder = WorkOrder(
-            claim_id=claim_id,
-            vendor_id=vendor_id,
-            assignee_id=assignee_id,
-            scheduled_date=datetime.strptime(scheduled_date, "%Y-%m-%d") if scheduled_date else None,
-            scheduled_time=scheduled_time,
-            status=status,
-            notes=notes
-        )
-        db.session.add(workorder)
-        claim.status = 'Scheduled'
-        db.session.commit()
-        flash('Work order assigned and claim set to Scheduled!')
+       # Save WorkOrder
+workorder = WorkOrder(
+    claim_id=claim_id,
+    vendor_id=vendor_id,
+    assignee_id=assignee_id,
+    scheduled_date=datetime.strptime(scheduled_date, "%Y-%m-%d") if scheduled_date else None,
+    scheduled_time=scheduled_time,
+    status=status,
+    notes=notes
+)
+db.session.add(workorder)
+claim.status = 'Scheduled'
+db.session.commit()
+flash('Work order assigned and claim set to Scheduled!')
+
+# Log manual assignment/changes
+log_msg = (
+    f"Work order assigned or changed: "
+    f"Vendor: {vendor.name if vendor else 'N/A'}, "
+    f"Assignee: {assignee.name if assignee else 'N/A'}, "
+    f"Scheduled: {scheduled_date} {scheduled_time}, "
+    f"Status: {status}, "
+    f"Notes: {notes or 'N/A'} by {current_user.name}"
+)
+db.session.add(ClaimLog(
+    claim_id=claim_id,
+    user_id=current_user.id,
+    action=log_msg
+))
+db.session.commit()
+
 
         # --- LOG IF FIRST ASSIGNMENT ---
         existing_wos = WorkOrder.query.filter_by(claim_id=claim_id).count()
