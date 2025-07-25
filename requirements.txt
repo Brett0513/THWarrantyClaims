@@ -10,3 +10,4 @@ gunicorn
 ics
 pytz
 reportlab
+Update requirements.txt to add all dependencies
