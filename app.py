@@ -203,6 +203,21 @@ def index():
         deferrals=deferrals
     )
 
+@app.route('/api/update_workorder_date', methods=['POST'])
+@login_required
+def update_workorder_date():
+    data = request.get_json()
+    workorder_id = data.get('workorder_id')
+    new_date = data.get('new_date')  # expected as "YYYY-MM-DD"
+    try:
+        workorder = WorkOrder.query.get_or_404(workorder_id)
+        workorder.scheduled_date = datetime.strptime(new_date, "%Y-%m-%d").date()
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
