@@ -7,3 +7,4 @@ Werkzeug
 python-dotenv
 pillow
 gunicorn
+ics
