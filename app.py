@@ -403,6 +403,7 @@ def assign_workorder(claim_id):
     import platform
     import subprocess
     from flask import url_for
+    from datetime import datetime
 
     claim = Claim.query.get_or_404(claim_id)
     vendors = Vendor.query.all()
@@ -437,23 +438,7 @@ def assign_workorder(claim_id):
         db.session.commit()
         flash('Work order assigned and claim set to Scheduled!')
 
-        # LOG EVERY WORK ORDER ASSIGNMENT/CHANGE
-        log_msg = (
-            f"Work order assigned or changed: "
-            f"Vendor: {vendor.name if vendor else 'N/A'}, "
-            f"Assignee: {assignee.name if assignee else 'N/A'}, "
-            f"Scheduled: {scheduled_date} {scheduled_time}, "
-            f"Status: {status}, "
-            f"Notes: {notes or 'N/A'} by {current_user.name}"
-        )
-        db.session.add(ClaimLog(
-            claim_id=claim_id,
-            user_id=current_user.id,
-            action=log_msg
-        ))
-        db.session.commit()
-
-        # --- LOG IF FIRST ASSIGNMENT (optional, doesn't hurt to keep) ---
+        # --- LOG IF FIRST ASSIGNMENT ---
         existing_wos = WorkOrder.query.filter_by(claim_id=claim_id).count()
         if existing_wos == 1:
             parts = []
@@ -462,10 +447,15 @@ def assign_workorder(claim_id):
             if vendor:
                 parts.append(f"Vendor: {vendor.name}")
             assignment_text = " and ".join(parts) if parts else "Unassigned"
+            sched_str = ""
+            if scheduled_date and scheduled_time:
+                sched_str = f" | Scheduled for: {scheduled_date} {scheduled_time}"
+            elif scheduled_date:
+                sched_str = f" | Scheduled for: {scheduled_date}"
             db.session.add(ClaimLog(
                 claim_id=claim_id,
                 user_id=current_user.id,
-                action=f"Claim first assigned to {assignment_text} by {current_user.name}"
+                action=f"Claim first assigned to {assignment_text} by {current_user.name}{sched_str}"
             ))
             db.session.commit()
 
@@ -562,7 +552,7 @@ def assign_workorder(claim_id):
             with open(ics_path, 'w', encoding='utf-8') as f:
                 f.write(ics_content)
 
-            # Try to auto-open the .ics file (optional)
+            # Try to auto-open the .ics file
             abs_path = os.path.abspath(ics_path)
             if platform.system() == 'Windows':
                 os.startfile(abs_path)
