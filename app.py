@@ -206,16 +206,31 @@ def index():
 @app.route('/api/update_workorder_date', methods=['POST'])
 @login_required
 def update_workorder_date():
+    from flask import jsonify  # make sure this import is present
     data = request.get_json()
     workorder_id = data.get('workorder_id')
     new_date = data.get('new_date')  # expected as "YYYY-MM-DD"
     try:
         workorder = WorkOrder.query.get_or_404(workorder_id)
+        old_date = workorder.scheduled_date
         workorder.scheduled_date = datetime.strptime(new_date, "%Y-%m-%d").date()
         db.session.commit()
+        
+        # Log the change to ClaimLog
+        db.session.add(ClaimLog(
+            claim_id=workorder.claim_id,
+            user_id=current_user.id,
+            action=(
+                f"Work order rescheduled from {old_date} to {workorder.scheduled_date} "
+                f"by {current_user.name}."
+            )
+        ))
+        db.session.commit()
+        
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
