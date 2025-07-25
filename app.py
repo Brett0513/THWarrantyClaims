@@ -592,6 +592,25 @@ def update_claim_status(claim_id):
         flash('Claim status updated and action logged.')
     return redirect(url_for('index'))
 
+@app.route('/defer_claim/<int:claim_id>', methods=['GET', 'POST'])
+@login_required
+def defer_claim(claim_id):
+    claim = Claim.query.get_or_404(claim_id)
+    if request.method == 'POST':
+        reason = request.form.get('reason', '')
+        old_status = claim.status
+        claim.status = "Deferred"
+        db.session.add(ClaimLog(
+            claim_id=claim.id,
+            user_id=current_user.id,
+            action=f"Status changed from {old_status} to Deferred. Reason: {reason}"
+        ))
+        db.session.commit()
+        flash('Claim deferred and action logged.')
+        return redirect(url_for('index'))
+    return render_template('defer_claim.html', claim=claim)
+
+
 @app.route('/delete_claim/<int:claim_id>', methods=['POST'])
 @login_required
 def delete_claim(claim_id):
