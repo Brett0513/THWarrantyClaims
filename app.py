@@ -415,39 +415,37 @@ def assign_workorder(claim_id):
         assignee = Assignee.query.get(assignee_id) if assignee_id else None
 
         # Save WorkOrder
-       # Save WorkOrder
-workorder = WorkOrder(
-    claim_id=claim_id,
-    vendor_id=vendor_id,
-    assignee_id=assignee_id,
-    scheduled_date=datetime.strptime(scheduled_date, "%Y-%m-%d") if scheduled_date else None,
-    scheduled_time=scheduled_time,
-    status=status,
-    notes=notes
-)
-db.session.add(workorder)
-claim.status = 'Scheduled'
-db.session.commit()
-flash('Work order assigned and claim set to Scheduled!')
+        workorder = WorkOrder(
+            claim_id=claim_id,
+            vendor_id=vendor_id,
+            assignee_id=assignee_id,
+            scheduled_date=datetime.strptime(scheduled_date, "%Y-%m-%d") if scheduled_date else None,
+            scheduled_time=scheduled_time,
+            status=status,
+            notes=notes
+        )
+        db.session.add(workorder)
+        claim.status = 'Scheduled'
+        db.session.commit()
+        flash('Work order assigned and claim set to Scheduled!')
 
-# Log manual assignment/changes
-log_msg = (
-    f"Work order assigned or changed: "
-    f"Vendor: {vendor.name if vendor else 'N/A'}, "
-    f"Assignee: {assignee.name if assignee else 'N/A'}, "
-    f"Scheduled: {scheduled_date} {scheduled_time}, "
-    f"Status: {status}, "
-    f"Notes: {notes or 'N/A'} by {current_user.name}"
-)
-db.session.add(ClaimLog(
-    claim_id=claim_id,
-    user_id=current_user.id,
-    action=log_msg
-))
-db.session.commit()
+        # LOG EVERY WORK ORDER ASSIGNMENT/CHANGE
+        log_msg = (
+            f"Work order assigned or changed: "
+            f"Vendor: {vendor.name if vendor else 'N/A'}, "
+            f"Assignee: {assignee.name if assignee else 'N/A'}, "
+            f"Scheduled: {scheduled_date} {scheduled_time}, "
+            f"Status: {status}, "
+            f"Notes: {notes or 'N/A'} by {current_user.name}"
+        )
+        db.session.add(ClaimLog(
+            claim_id=claim_id,
+            user_id=current_user.id,
+            action=log_msg
+        ))
+        db.session.commit()
 
-
-        # --- LOG IF FIRST ASSIGNMENT ---
+        # --- LOG IF FIRST ASSIGNMENT (optional, doesn't hurt to keep) ---
         existing_wos = WorkOrder.query.filter_by(claim_id=claim_id).count()
         if existing_wos == 1:
             parts = []
@@ -556,7 +554,7 @@ db.session.commit()
             with open(ics_path, 'w', encoding='utf-8') as f:
                 f.write(ics_content)
 
-            # Try to auto-open the .ics file
+            # Try to auto-open the .ics file (optional)
             abs_path = os.path.abspath(ics_path)
             if platform.system() == 'Windows':
                 os.startfile(abs_path)
@@ -571,6 +569,7 @@ db.session.commit()
         return redirect(url_for('index'))
 
     return render_template('assign_workorder.html', claim=claim, vendors=vendors, assignees=assignees)
+
 
 @app.route('/update_claim_status/<int:claim_id>', methods=['POST'])
 @login_required
