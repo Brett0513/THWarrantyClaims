@@ -9,3 +9,4 @@ pillow
 gunicorn
 ics
 pytz
+reportlab
