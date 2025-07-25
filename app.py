@@ -158,6 +158,20 @@ def index():
     now = datetime.now().date()
     for claim in claims:
         wos = [wo for wo in workorders if wo.claim_id == claim.id]
+        # NEW LOGIC STARTS HERE
+        if claim.status == "Deferred":
+            claim_status_override[claim.id] = "Deferred"
+        elif claim.status == "Closed":
+            claim_status_override[claim.id] = "Closed"
+        else:
+            is_scheduled = any(wo.scheduled_date and wo.scheduled_date >= now for wo in wos)
+            if is_scheduled:
+                claim_status_override[claim.id] = "Scheduled"
+            else:
+                claim_status_override[claim.id] = "Open"
+        # NEW LOGIC ENDS HERE
+
+        # Scheduled date/assignment
         if wos:
             scheduled_wos = [wo for wo in wos if wo.scheduled_date]
             if scheduled_wos:
@@ -175,12 +189,6 @@ def index():
         else:
             claim_scheduled_dates[claim.id] = ""
             claim_assignments[claim.id] = "Unassigned"
-
-        is_scheduled = any(wo.scheduled_date and wo.scheduled_date >= now for wo in wos)
-        if is_scheduled and claim.status != "Closed":
-            claim_status_override[claim.id] = "Scheduled"
-        else:
-            claim_status_override[claim.id] = claim.status
 
     open_claims = [c for c in claims if claim_status_override[c.id] == "Open"]
     scheduled_claims = [c for c in claims if claim_status_override[c.id] == "Scheduled"]
